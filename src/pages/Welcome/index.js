@@ -18,17 +18,64 @@ export function Welcome() {
 
   const [balance, setBalance] = useState(null)
   const [currentAccount, setCurrentAccount] = useState(null)
+  const [tokenBalance, setTokenBalance] = useState(null)
+  const [tokenAddress, setTokenAddress] = useState(null)
+  const [tokenName, setTokenName] = useState(null)
+  const [symbol, setSymbol] = useState(null)
+  const [decimal, setDecimal] = useState(null)
   const [chainId, setChainId] = useState(null)
   const [chainname, setChainName] = useState()
 
+  const getName = async (erc20) => {
+    try {
+      return await erc20.name();
+    } catch (err) {
+      return ''
+    }
+  }
+  const getSymbol = async (erc20) => {
+    try {
+      return await erc20.symbol();
+    } catch (err) {
+      return ''
+    }
+  }
+  const getDecimal = async (erc20) => {
+    try {
+      return await erc20.decimals()
+    } catch (err) {
+      return 0
+    }
+  }
+  const getBalance = async (erc20) => {
+    try {
+      if(tokenAddress) {
+        console.log({tokenAddress})
+        const balance = await erc20.balanceOf(currentAccount)
+        console.log({balance})
+        return ethers.utils.formatEther(balance)
+      }
+    } catch (err) {
+      console.log("get token Balance error", err)
+      return 0
+    }
+  }
+  async function queryTokenBalance(provider){
+    if( tokenAddress ) {
+      const signer = provider.getSigner()
+      const erc20 = new ethers.Contract(tokenAddress, ERC20abi, provider)
+      Promise.all([ getName(erc20), getSymbol(erc20), getDecimal(erc20), getBalance(erc20)]).then(values => {
+        console.log(values)
+        setTokenName(values[0])
+        setSymbol(values[1])
+        setDecimal(values[2])
+        setTokenBalance(values[3])
+      })
+    }
+    
+    provider.getBalance(currentAccount).then(bc => setBalance(ethers.utils.formatEther(bc)))
 
-  async function queryTokenBalance(){
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    provider.getBalance(currentAccount).then((result)=>{
-      setBalance(ethers.utils.formatEther(result))
-    })
     provider.getNetwork().then((result)=>{
-      console.log("network", result)
       setChainId(result.chainId)
       setChainName(result.name)
     })
@@ -39,48 +86,47 @@ export function Welcome() {
     if(!currentAccount || !ethers.utils.isAddress(currentAccount)) return
     //client side code
     if(!window.ethereum) return
-    queryTokenBalance()
-
+    
     const provider = new ethers.providers.Web3Provider(window.ethereum)
-    const erc20 = new ethers.Contract(AddressERC20, ERC20abi, provider)
-    // listen for changes on an Ethereum address
-    console.log(`listening for Transfer...`)
-
-    const fromMe = erc20.filters.Transfer(currentAccount, null)
-    provider.on(fromMe, (from, to, amount, event) => {
-        console.log('Transfer|sent', { from, to, amount, event })
-        queryTokenBalance()
-    })
-
-    const toMe = erc20.filters.Transfer(null, currentAccount)
-    provider.on(toMe, (from, to, amount, event) => {
-        console.log('Transfer|received', { from, to, amount, event })
-        queryTokenBalance()
-    })
-
-    // remove listener when the component is unmounted
-    return () => {
-        provider.removeAllListeners(toMe)
-        provider.removeAllListeners(fromMe)
-    } 
-  },[currentAccount])
+    queryTokenBalance(provider)
+    if(tokenAddress) {
+      // const erc20 = new ethers.Contract(tokenAddress, ERC20abi, provider)
+      // listen for changes on an Ethereum address
+      console.log(`listening for Transfer...`)
+  
+      window.ethereum.on('chainChanged', () => {
+        window.location.reload();
+      })
+      window.ethereum.on('accountsChanged', () => {
+        window.location.reload();
+      })
+  
+      // const fromMe = erc20.filters.Transfer(currentAccount, null)
+      // provider.on(fromMe, (from, to, amount, event) => {
+      //     console.log('Transfer|sent', { from, to, amount, event })
+      //     queryTokenBalance(provider)
+      // })
+  
+      // const toMe = erc20.filters.Transfer(null, currentAccount)
+      // provider.on(toMe, (from, to, amount, event) => {
+      //     console.log('Transfer|received', { from, to, amount, event })
+      //     queryTokenBalance(provider)
+      // })
+  
+      // // remove listener when the component is unmounted
+      // return () => {
+      //     provider.removeAllListeners(toMe)
+      //     provider.removeAllListeners(fromMe)
+      // } 
+    }
+  },[currentAccount, tokenAddress])
 
   const onClickConnect = () => {
     //client side code
-    console.log(window.ethereum)
     if(!window.ethereum) {
       console.log("please install MetaMask")
       return
     }
-    /*
-    //change from window.ethereum.enable() which is deprecated
-    //see docs: https://docs.metamask.io/guide/ethereum-provider.html#legacy-methods
-    window.ethereum.request({ method: 'eth_requestAccounts' })
-    .then((accounts:any)=>{
-      if(accounts.length>0) setCurrentAccount(accounts[0])
-    })
-    .catch('error',console.error)
-    */
 
     //we can do it using ethers.js
     const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -97,6 +143,17 @@ export function Welcome() {
     console.log("onClickDisConnect")
     setBalance(undefined)
     setCurrentAccount(undefined)
+    setTokenBalance(null)
+    setSymbol(null)
+    setTokenAddress(null)
+    setDecimal(null)
+    setTokenName(null)
+    setChainId(null)
+    setChainName(null)
+  }
+
+  const updatedToken = (token) => {
+    setTokenAddress(token)
   }
 
   return (
@@ -119,13 +176,28 @@ export function Welcome() {
             <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white text-left">Account info</h2>
             <ul className="space-y-1 max-w-md list-disc list-inside text-gray-500 dark:text-gray-400 text-left">
                 <li>
+                  Chain Info: ChainId {chainId} name {chainname}
+                </li>
+                <li>
                   ETH Balance of current account: {balance}
                 </li>
                 <li>
-                  Chain Info: ChainId {chainId} name {chainname}
+                  Symbol: {symbol}
+                </li>
+                <li>
+                  Decimal: {decimal}
                 </li>
             </ul>
-            <Donation addressContract={AddressDonation} currentAccount={currentAccount} />
+            <Donation 
+              addressContract={AddressDonation} 
+              currentAccount={currentAccount} 
+              symbol={symbol}
+              decimal={decimal}
+              tokenName={tokenName}
+              tokenAddress={tokenAddress}
+              tokenBalance={tokenBalance}
+              updatedToken={updatedToken}
+            />
             <DonationEth addressContract={AddressDonation} currentAccount={currentAccount} />
             <DepositToVault addressContract={AddressDonation} currentAccount={currentAccount} />
             <DepositEthToVault addressContract={AddressDonation} currentAccount={currentAccount} />

@@ -6,7 +6,6 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
-    "@uniswap/sdk": "^3.0.3",
     "ethers": "^5.7.0",
     "flowbite": "^1.5.2",
     "flowbite-react": "^0.1.10",
@@ -41,6 +40,8 @@
     ]
   },
   "devDependencies": {
+    "@uniswap/sdk-core": "^3.0.2",
+    "@uniswap/v3-sdk": "^3.9.0",
     "autoprefixer": "^10.4.8",
     "postcss": "^8.4.16",
     "tailwindcss": "^3.1.8"

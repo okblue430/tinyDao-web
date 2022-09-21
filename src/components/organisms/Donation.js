@@ -1,17 +1,88 @@
 import { useState } from 'react'
 import { ethers } from "ethers";
 import {DonationAbi} from 'abis/Donation'
+import { ERC20abi } from 'abis/ERC20';
+import { Pool } from '@uniswap/v3-sdk'
+import { Token } from '@uniswap/sdk-core'
+import IUniswapV3PoolABI from 'abis/IUniswapV3Pool.json'
+// import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
 
 export function Donation ({
     addressContract,
-    currentAccount
+    currentAccount,
+    symbol,
+    decimal,
+    tokenName,
+    tokenAddress,
+    tokenBalance,
+    updatedToken = () => {}
 }) {
     const [amount, setAmount] = useState(0.0)
-    const [address, setAddress] = useState('')
+    const [address, setAddress] = useState('0xc7ad46e0b8a400bb3c915120d284aafba8fc4735')
     const [loading, setLoading] = useState(false)
+    const [err, setErr] = useState('')
+
+    const getPoolImmutables = async (poolContract) => {
+        const [factory, token0, token1, fee, tickSpacing, maxLiquidityPerTick] = await Promise.all([
+          poolContract.factory(),
+          poolContract.token0(),
+          poolContract.token1(),
+          poolContract.fee(),
+          poolContract.tickSpacing(),
+          poolContract.maxLiquidityPerTick(),
+        ])
+      
+        const immutables = {
+          factory,
+          token0,
+          token1,
+          fee,
+          tickSpacing,
+          maxLiquidityPerTick,
+        }
+        return immutables
+    }
+    const getPoolState = async (poolContract) => {
+        const [liquidity, slot] = await Promise.all([poolContract.liquidity(), poolContract.slot0()])
+      
+        const PoolState = {
+          liquidity,
+          sqrtPriceX96: slot[0],
+          tick: slot[1],
+          observationIndex: slot[2],
+          observationCardinality: slot[3],
+          observationCardinalityNext: slot[4],
+          feeProtocol: slot[5],
+          unlocked: slot[6],
+        }
+      
+        return PoolState
+    }
+    const getPoolInstance = async () => {
+        const poolProvider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/84dd111195a844e1a0c2c746a7e8ff2f')
+        const poolAddress = '0x8ad599c3A0ff1De082011EFDDc58f1908eb6e6D8'
+        const poolContract = new ethers.Contract(poolAddress, IUniswapV3PoolABI, poolProvider)
+        const [immutables, state] = await Promise.all([getPoolImmutables(poolContract), getPoolState(poolContract)])
+
+        const TokenA = new Token(4, tokenAddress, decimal, symbol, tokenName)
+
+        const TokenB = new Token(4, immutables.token1, 18, 'WETH', 'Wrapped Ether')
+
+        const poolExample = new Pool(
+            TokenA,
+            TokenB,
+            immutables.fee,
+            state.sqrtPriceX96.toString(),
+            state.liquidity.toString(),
+            state.tick
+        )
+        console.log(poolExample)
+    }
 
     const send = async (event) => {
         event.preventDefault()
+        await getPoolInstance()
+        setErr('')
         console.log('donate send', amount)
         if(address === '') {
             alert("please input token address")
@@ -19,7 +90,7 @@ export function Donation ({
         }
         if(isNaN(amount)) {
             alert("please input numeric value")
-        }else if(Number(amount) <= 0 ) {
+        }else if(Number(amount) <= 0 || Number(amount) > Number(tokenBalance) ) {
             alert('please input right amount.')
         }else {
             // process donation
@@ -28,20 +99,33 @@ export function Donation ({
             if(!window.ethereum) return    
             const provider = new ethers.providers.Web3Provider(window.ethereum)
             const signer = provider.getSigner()
-            const donation = new ethers.Contract(addressContract, DonationAbi, signer)
-            console.log("donation", donation)
-            try {
-                const eth_amount = ethers.utils.parseEther(amount)
-                const convertedAmount = ethers.utils.formatEther(eth_amount)
-                console.log("param", ethers.utils.parseEther(amount), convertedAmount)
-                const res = await donation.donate(ethers.utils.parseEther(amount), address, false, 0, 0)
-                console.log({res})
-                setAmount(0)
-                setAddress('')
-            } catch (error) {
-                console.log("deposite error", error)            
-                alert('There was some problem, please try again')
+            const _TOKEN = new ethers.Contract(tokenAddress, ERC20abi);
+            const ownToken = _TOKEN.connect(signer);
+            const erc20 = new ethers.Contract(tokenAddress, ERC20abi, provider)
+            // approve token
+            try{
+                const tx = await ownToken.approve(tokenAddress, amount)
+                console.log(tx)
+                await tx.wait();
+            }catch(error) {
+                console.log("approve error", error)
+                setErr('There is an error to approve the amount')
             }
+            // donate token
+            // const donation = new ethers.Contract(addressContract, DonationAbi, signer)
+            // console.log("donation", donation)
+            // try {
+            //     const eth_amount = ethers.utils.parseEther(amount)
+            //     const convertedAmount = ethers.utils.formatEther(eth_amount)
+            //     console.log("param", ethers.utils.parseEther(amount), convertedAmount)
+            //     const res = await donation.donate(ethers.utils.parseEther(amount), address, false, 0, 0)
+            //     console.log({res})
+            //     setAmount(0)
+            //     setAddress('')
+            // } catch (error) {
+            //     console.log("deposite error", error)            
+            //     alert('There was some problem, please try again')
+            // }
             setLoading(false)
 
         }
@@ -58,6 +142,33 @@ export function Donation ({
                             value={address} 
                             onChange={(e) => setAddress(e.target.value)}
                         ></input>
+                    </div>
+                    <button 
+                        className="w-40 ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                        type="button"
+                        onClick={()=>updatedToken(address)}
+                    >
+                        Get Info
+                    </button>
+                </div>
+                <div>
+                    <ul className="pl-4 space-y-1 max-w-md list-disc list-inside text-gray-500 dark:text-gray-400 text-left">
+                        <li>
+                        Token Balance: {tokenBalance}
+                        </li>
+                        <li>
+                        Name: {tokenName}
+                        </li>
+                        <li>
+                        Symbol: {symbol}
+                        </li>
+                        <li>
+                        Decimal: {decimal}
+                        </li>
+                    </ul>
+                </div>
+                {tokenAddress && <div className="flex items-center justify-between">
+                    <div className='text-right'>
                         <input className="mt-2 w-40 shadow appearance-none border rounded py-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
                             placeholder="amount"
                             type="text" 
@@ -75,7 +186,10 @@ export function Donation ({
                             </div> 
                         : <div>Donate</div>}
                     </button>
-                </div>
+                </div>}
+                {
+                    err && <p className="mb-6 text-md font-normal text-red-500 lg:text-xl dark:text-red-400">{err}</p>
+                }
             </form>
         </div>
     );
