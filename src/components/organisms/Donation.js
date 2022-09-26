@@ -69,6 +69,7 @@ export function Donation ({
             alert('please input right amount.')
         }else {
             const swap = await getSwapPrice()
+            console.log({swap})
             if(!swap[2]) {
                 setErr('There is an error to get UniswapV3 pool’s fee')
                 return
