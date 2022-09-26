@@ -6,10 +6,10 @@ import { ERC20abi } from 'abis/ERC20';
 import { Token } from '@uniswap/sdk-core'
 // import IUniswapV3PoolABI from 'abis/IUniswapV3Pool.json'
 import { getPrice } from 'services/AlphaRouterService'
-import { TargetEthAddress } from 'config';
+import { AddressDonation } from 'config';
 // import { serializeTransaction } from 'ethers/lib/utils';
 // import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
-const TargetTokenAddress = TargetEthAddress
+const TargetTokenAddress = AddressDonation
 
 export function Donation ({
     addressContract,
