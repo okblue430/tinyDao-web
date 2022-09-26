@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { ethers } from "ethers";
 import {DonationAbi} from 'abis/Donation'
 import { ERC20abi } from 'abis/ERC20';
-import { Pool } from '@uniswap/v3-sdk'
+// import { Pool } from '@uniswap/v3-sdk'
 import { Token } from '@uniswap/sdk-core'
-import IUniswapV3PoolABI from 'abis/IUniswapV3Pool.json'
+// import IUniswapV3PoolABI from 'abis/IUniswapV3Pool.json'
 import { getPrice } from 'services/AlphaRouterService'
-import { serializeTransaction } from 'ethers/lib/utils';
+// import { serializeTransaction } from 'ethers/lib/utils';
 // import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
 const TargetTokenAddress = process.env.REACT_APP_TARGET_ETH_ADDRESS
 
@@ -21,7 +21,7 @@ export function Donation ({
     updatedToken = () => {}
 }) {
     const [amount, setAmount] = useState(0.0)
-    const [address, setAddress] = useState('0xc7ad46e0b8a400bb3c915120d284aafba8fc4735')
+    const [address, setAddress] = useState('') // 0xc7ad46e0b8a400bb3c915120d284aafba8fc4735
     const [loading, setLoading] = useState(false)
     const [err, setErr] = useState('')
     const [act, setAct] = useState(true)
