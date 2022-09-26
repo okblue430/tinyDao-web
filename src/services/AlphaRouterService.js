@@ -1,3 +1,5 @@
+import { TargetEthAddress } from 'config'
+
 const { AlphaRouter } = require('@uniswap/smart-order-router')
 const { Token, CurrencyAmount, TradeType, Percent } = require('@uniswap/sdk-core')
 const { ethers, BigNumber } = require('ethers')
@@ -15,7 +17,7 @@ const router = new AlphaRouter({ chainId: chainId, provider: web3Provider })
 const name0 = 'Wrapped Ether'
 const symbol0 = 'WETH'
 const decimals0 = 18
-const address0 = process.env.REACT_APP_TARGET_ETH_ADDRESS
+const address0 = TargetEthAddress
 console.log({address0})
 const WETH = new Token(chainId, address0, decimals0, symbol0, name0)
 

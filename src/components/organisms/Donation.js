@@ -6,9 +6,10 @@ import { ERC20abi } from 'abis/ERC20';
 import { Token } from '@uniswap/sdk-core'
 // import IUniswapV3PoolABI from 'abis/IUniswapV3Pool.json'
 import { getPrice } from 'services/AlphaRouterService'
+import { TargetEthAddress } from 'config';
 // import { serializeTransaction } from 'ethers/lib/utils';
 // import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
-const TargetTokenAddress = process.env.REACT_APP_TARGET_ETH_ADDRESS
+const TargetTokenAddress = TargetEthAddress
 
 export function Donation ({
     addressContract,
@@ -93,10 +94,7 @@ export function Donation ({
             const donation = new ethers.Contract(addressContract, DonationAbi, signer)
             console.log("donation", donation)
             try {
-                const eth_amount = ethers.utils.parseEther(amount)
-                const convertedAmount = ethers.utils.formatEther(eth_amount)
-                console.log("param", ethers.utils.parseEther(amount), convertedAmount)
-                const res = await donation.donate(ethers.utils.parseEther(amount), address, act, fee, amountOut)
+                const res = await donation.donate(amount, address, act, fee, amountOut)
                 console.log({res})
                 setAmount(0)
                 setAddress('')
