@@ -26,11 +26,11 @@ export const getPrice = async (fToken, inputAmount, slippageAmount, deadline, wa
 //   const currencyAmount = CurrencyAmount.fromRawAmount(fToken, JSBI.BigInt(inputAmount))
   const wei = ethers.utils.parseUnits(inputAmount.toString(), decimals0)
 //   console.log({wei})
-  const currencyAmount = CurrencyAmount.fromRawAmount(fToken, JSBI.BigInt(wei))
+  const currencyAmount = CurrencyAmount.fromRawAmount(fToken, JSBI.BigInt(inputAmount))
 //   const currencyAmount = CurrencyAmount.fromRawAmount(fToken, inputAmount)
 
   const route = await router.route(
-    inputAmount, //currencyAmount,
+    currencyAmount,
     WETH,
     TradeType.EXACT_INPUT,
     {
