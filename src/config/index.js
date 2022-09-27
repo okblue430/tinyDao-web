@@ -1,9 +1,7 @@
-const AddressERC20 = '0x8E45C0936fa1a65bDaD3222bEFeC6a03C83372cE'
-const AddressDonation = '0xBEe6FFc1E8627F51CcDF0b4399a1e1abc5165f15'
-const TempTokenContractAddress = '0xc7ad46e0b8a400bb3c915120d284aafba8fc4735'
+const AddressERC20 = '0xa779C1D17bC5230c07afdC51376CAC1cb3Dd5314'
+const AddressDonation = '0x76cec9299B6Fa418dc71416FF353737AB7933A7D'
 
 export {
     AddressERC20,
-    AddressDonation,
-    TempTokenContractAddress
+    AddressDonation
 }

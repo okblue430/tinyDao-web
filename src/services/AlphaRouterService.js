@@ -30,7 +30,7 @@ export const getPrice = async (fToken, inputAmount, slippageAmount, deadline, wa
 //   const currencyAmount = CurrencyAmount.fromRawAmount(fToken, inputAmount)
 
   const route = await router.route(
-    currencyAmount,
+    inputAmount, //currencyAmount,
     WETH,
     TradeType.EXACT_INPUT,
     {
