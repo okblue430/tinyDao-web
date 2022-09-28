@@ -191,6 +191,7 @@ export function Welcome() {
             <Donation 
               addressContract={AddressDonation} 
               currentAccount={currentAccount} 
+              chainId={chainId} 
               symbol={symbol}
               decimal={decimal}
               tokenName={tokenName}

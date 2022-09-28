@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ethers } from "ethers";
 import {DonationAbi} from 'abis/Donation'
 import { ERC20abi } from 'abis/ERC20';
-// import { Pool } from '@uniswap/v3-sdk'
+import { Pool } from '@uniswap/v3-sdk'
 import { Token } from '@uniswap/sdk-core'
 // import IUniswapV3PoolABI from 'abis/IUniswapV3Pool.json'
 import { getPrice } from 'services/AlphaRouterService'
@@ -11,9 +11,16 @@ import { AddressDonation } from 'config';
 // import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
 const TargetTokenAddress = AddressDonation
 
+const name0 = 'Wrapped Ether'
+const symbol0 = 'WETH'
+const decimals0 = 18
+const address0 = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+const WETH = new Token(chainId, address0, decimals0, symbol0, name0)
+
 export function Donation ({
     addressContract,
     currentAccount,
+    chainId,
     symbol,
     decimal,
     tokenName,
@@ -22,7 +29,7 @@ export function Donation ({
     updatedToken = () => {}
 }) {
     const [amount, setAmount] = useState(0.0)
-    const [address, setAddress] = useState('') // 0xc7ad46e0b8a400bb3c915120d284aafba8fc4735
+    const [address, setAddress] = useState('0xc00e94Cb662C3520282E6f5717214004A7f26888') // 0xc7ad46e0b8a400bb3c915120d284aafba8fc4735
     const [loading, setLoading] = useState(false)
     const [err, setErr] = useState('')
     const [act, setAct] = useState(true)
@@ -36,7 +43,7 @@ export function Donation ({
         setRatio(null)
         setLoading(true)
         
-        const fToken = new Token(4, tokenAddress, decimal, symbol, tokenName)
+        const fToken = new Token(1, tokenAddress, decimal, symbol, tokenName)
         const slippageAmount = 2 // 2%
         const deadlineMinutes = 3 // 3 mins
         const swap = await getPrice(
@@ -52,6 +59,42 @@ export function Donation ({
         setRatio(swap[2])
         setLoading(false)
         return swap
+    }
+
+    const getPool = async () => {
+        const pool = new Pool(
+            USDC,
+            WETH,
+            3000,
+            '1283723400872544054280619964098219',
+            '8390320113764730804' ,
+            '193868'
+        );
+        const routeToRatioResponse = await router.routeToRatio(
+            token0Balance,
+            token1Balance,
+            new Position({
+              pool,
+              tickLower: -60,
+              tickUpper: 60,
+              liquidity: 1,
+             }),
+             {
+               ratioErrorTolerance: new Fraction(1, 100),
+               maxIterations: 6,
+             },
+             {
+               swapConfig: {
+                 recipient: tokenAddress,
+                 slippage: new Percent(5, 100),
+                 deadline: 100
+               },
+               addLiquidityOptions: {
+                 tokenId: 10,
+               }
+            }
+        );
+        console.log({routeToRatioResponse})
     }
 
     const approve = async (event) => {
@@ -80,7 +123,7 @@ export function Donation ({
             if(!window.ethereum) return    
             const provider = new ethers.providers.Web3Provider(window.ethereum)
             const signer = provider.getSigner()
-            const _TOKEN = new ethers.Contract(tokenAddress, ERC20abi);
+            const _TOKEN = new ethers.Contract(tokenAddress, ERC20abi, provider);
             const ownToken = _TOKEN.connect(signer);
             // approve token
             try{
@@ -93,9 +136,9 @@ export function Donation ({
             }
             // donate token
             const donation = new ethers.Contract(addressContract, DonationAbi, signer)
-            console.log("donation", donation)
             try {
-                const res = await donation.donate(amount, address, act, fee, amountOut)
+                console.log("donation", {amount, address, act, fee: swap[1], amountOut: swap[0]})
+                const res = await donation.donate(ethers.utils.parseEther(amount), tokenAddress, act, 3000, ethers.utils.parseEther(swap[0]))
                 console.log({res})
                 setAmount(0)
                 setAddress('')
