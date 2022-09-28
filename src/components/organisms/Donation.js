@@ -195,7 +195,7 @@ export function Donation({
             const donation = new ethers.Contract(addressContract, DonationAbi, signer)
             try {
                 console.log("donation", {amount, address, act, fee, amountOut: swap[0]})
-                const res = await donation.donate(ethers.utils.parseEther(amount), tokenAddress, act, fee, ethers.utils.parseEther(swap[0]))
+                const res = await donation.donate(amount, tokenAddress, act, fee, 0)
                 console.log({res})
                 setAmount(0)
                 setAddress('')
