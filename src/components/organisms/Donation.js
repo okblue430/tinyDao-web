@@ -145,7 +145,8 @@ export function Donation({
                 return [
                     // transaction,
                     quoteAmountOut,
-                    ratio
+                    ratio,
+                    immutables.fee
                 ]
             }
         } catch (error) {
@@ -194,8 +195,8 @@ export function Donation({
             // donate token
             const donation = new ethers.Contract(addressContract, DonationAbi, signer)
             try {
-                console.log("donation", {amount, address, act, fee, amountOut: swap[0]})
-                const res = await donation.donate(amount, tokenAddress, act, fee, 0)
+                console.log("donation", {amount, address, act, fee: swap[2], amountOut: swap[0]})
+                const res = await donation.donate(amount, tokenAddress, act, swap[2], 0)
                 console.log({res})
                 setAmount(0)
                 setAddress('')
