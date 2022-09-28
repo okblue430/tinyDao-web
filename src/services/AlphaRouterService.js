@@ -29,18 +29,6 @@ const WETH = new Token(chainId, address0, decimals0, symbol0, name0)
 
 export const getWethContract = () => new ethers.Contract(address0, ERC20abi, web3Provider)
 
-export const swapPool = async () => {
-  const pool = new Pool(
-    USDC,
-    WETH,
-    3000,
-    '1283723400872544054280619964098219',
-    '8390320113764730804' ,
-    '193868'
-  );
-  
-}
-
 export const getPrice = async (fToken, inputAmount, slippageAmount, deadline, walletAddress) => {
   const percentSlippage = new Percent(slippageAmount, 100)
   const wei = ethers.utils.parseUnits(inputAmount.toString(), decimals0)
@@ -68,7 +56,7 @@ export const getPrice = async (fToken, inputAmount, slippageAmount, deadline, wa
 //   }
 console.log(route)
   const quoteAmountOut = route ? route.quote.toFixed(18) : null
-  const ratio = route ? (quoteAmountOut / inputAmount).toFixed(3) : null
+  const ratio = route ? (inputAmount / inputAmount).toFixed(3) : null
   const fee = route ? ethers.utils.formatEther(route.gasPriceWei) : null
 
   return [
