@@ -185,18 +185,19 @@ export function Donation({
             const ownToken = _TOKEN.connect(signer);
             // approve token
             try{
-                const tx = await ownToken.approve(TargetTokenAddress, amount)
+                const tx = await ownToken.approve(TargetTokenAddress, ethers.utils.parseEther(amount))
                 console.log(tx)
                 await tx.wait();
             }catch(error) {
                 console.log("approve error", error)
                 setErr('There is an error to approve the amount')
+                return;
             }
             // donate token
             const donation = new ethers.Contract(addressContract, DonationAbi, signer)
             try {
                 console.log("donation", {amount, address, act, fee: swap[2], amountOut: swap[0]})
-                const res = await donation.donate(amount, tokenAddress, act, swap[2], 0)
+                const res = await donation.donate(ethers.utils.parseEther(amount), tokenAddress, act, swap[2], 0)
                 console.log({res})
                 setAmount(0)
                 setAddress('')
