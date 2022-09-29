@@ -44,6 +44,7 @@ export function Donation({
     const [address, setAddress] = useState('0xc00e94Cb662C3520282E6f5717214004A7f26888') // 0xc7ad46e0b8a400bb3c915120d284aafba8fc4735
     const [loading, setLoading] = useState(false)
     const [err, setErr] = useState('')
+    const [message, setMessage] = useState('')
     const [act, setAct] = useState(true)
     const [amountOut, setAmountOut] = useState(null)
     const [fee, setFee] = useState(null)
@@ -159,6 +160,7 @@ export function Donation({
         event.preventDefault()
         // await getPoolInstance()
         setErr('')
+        setMessage('')
         console.log('donate approve', amount)
         if (address === '') {
             alert("please input token address")
@@ -199,7 +201,8 @@ export function Donation({
                 console.log("donation", {amount, address, act, fee: swap[2], amountOut: swap[0]})
                 const res = await donation.donate(ethers.utils.parseEther(amount), tokenAddress, act, swap[2], 0)
                 console.log({res})
-                setAmount(0)
+                setMessage('Donation successfully')
+                setAmount('')
                 setAddress('')
             } catch (error) {
                 console.log("deposite error", error)            
@@ -296,7 +299,10 @@ export function Donation({
                     </div>}
                 { }
                 {
-                    err && <p className="mb-6 text-md font-normal text-red-500 lg:text-xl dark:text-red-400">{err}</p>
+                    err && <p className="mt-4 mb-6 text-md font-normal text-red-500 lg:text-xl dark:text-red-400">{err}</p>
+                }
+                {
+                    message && <p className="mt-4 mb-6 text-md font-normal text-lime-500 lg:text-xl dark:text-lime-400">{message}</p>
                 }
             </form>
         </div>
