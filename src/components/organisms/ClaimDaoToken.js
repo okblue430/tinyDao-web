@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { ethers } from "ethers";
 import {DonationAbi} from 'abis/Donation'
 import { showBalance } from 'services/util';
+import { ERC20abi } from 'abis/ERC20';
+import { AddressERC20 } from 'config';
 
 export function ClaimDaoToken ({
     addressContract,
@@ -10,9 +12,11 @@ export function ClaimDaoToken ({
     daoTokenAmount
 }) {
     const [loading, setLoading] = useState(false)
+    const [amount, setAmount] = useState(null)
 
     const send = async (event) => {
         event.preventDefault()
+        setAmount(null)
         setLoading(true)
         if(!window.ethereum) return    
         const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -20,6 +24,13 @@ export function ClaimDaoToken ({
         const donation = new ethers.Contract(addressContract, DonationAbi, signer)
         try {
             const res = await donation.claimDaoTokens()
+            const daoTokenAddress = await donation.daoToken() // 0xc00e94Cb662C3520282E6f5717214004A7f26888
+            console.log(daoTokenAddress)
+            const erc20 = new ethers.Contract(AddressERC20, ERC20abi, provider)
+            const balance = await erc20.balanceOf(daoTokenAddress)
+            // const balance = await erc20.balanceOf('0xc00e94Cb662C3520282E6f5717214004A7f26888')
+            console.log(showBalance(balance))
+            setAmount(showBalance(balance))
             console.log({res})
         } catch (error) {
             console.log("deposite error", error)            
@@ -44,15 +55,11 @@ export function ClaimDaoToken ({
                         : <div>Claim</div>}
                     </button>
                 </div>
-                {donater && 
+                {amount && 
                 <div className='my-6'>
                     <div className="flex items-center justify-between">
-                        <p className='w-40 text-left text-black text-xs text-bold mb-3'>Donater : </p>
-                        <p className='text-black text-xs text-bold mb-3'>{donater}</p>
-                    </div>
-                    <div className="flex items-center justify-between">
                         <p className='w-40 text-left text-black text-xs text-bold mb-3'>Dao Token Amount : </p>
-                        <p className='text-black text-xs text-bold mb-3'>{showBalance(daoTokenAmount)}</p>
+                        <p className='text-black text-xs text-bold mb-3'>{amount}</p>
                     </div>
                 </div>}
             </form>
