@@ -44,6 +44,7 @@ export function ClaimDaoToken ({
                         : <div>Claim</div>}
                     </button>
                 </div>
+                {donater && 
                 <div className='my-6'>
                     <div className="flex items-center justify-between">
                         <p className='w-40 text-left text-black text-xs text-bold mb-3'>Donater : </p>
@@ -53,7 +54,7 @@ export function ClaimDaoToken ({
                         <p className='w-40 text-left text-black text-xs text-bold mb-3'>Dao Token Amount : </p>
                         <p className='text-black text-xs text-bold mb-3'>{showBalance(daoTokenAmount)}</p>
                     </div>
-                </div>
+                </div>}
             </form>
         </div>
     );

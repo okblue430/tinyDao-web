@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import {DonationAbi} from 'abis/Donation'
 import { ERC20abi } from 'abis/ERC20';
 import { AddressERC20 } from 'config';
+import { showBalance } from 'services/util';
 
 export function ReadERC20({
     addressContract,
@@ -20,11 +21,12 @@ export function ReadERC20({
         const donation = new ethers.Contract(addressContract, DonationAbi, signer)
         setLoading(true)
         try {
-            const tokenInfo = await donation.tokenInfos(currentAccount)
-            console.log({tokenInfo})
-            // const readableBalance = ethers.utils.formatEther(balance)
-            // console.log({readableBalance})
-            // setAmount(readableBalance)
+            // const daoTokenAddress = await donation.daoToken() // 0xc00e94Cb662C3520282E6f5717214004A7f26888
+            // console.log(daoTokenAddress)
+            const erc20 = new ethers.Contract(AddressERC20, ERC20abi, provider)
+            const balance = await erc20.balanceOf('0xc00e94Cb662C3520282E6f5717214004A7f26888')
+            console.log(showBalance(balance))
+            setAmount(showBalance(balance))
         } catch (error) {
             console.log("balance error", error)            
         }

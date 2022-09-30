@@ -228,7 +228,7 @@ export function Welcome() {
             <DepositEthToVault addressContract={AddressDonation} currentAccount={currentAccount} />
             <ClaimDaoToken addressContract={AddressDonation} currentAccount={currentAccount} donater={donater} daoTokenAmount={daoTokenAmount} />
             <AddReferral addressContract={AddressDonation} currentAccount={currentAccount} />
-            {/* <ReadERC20 addressContract={AddressDonation} currentAccount={currentAccount} /> */}
+            <ReadERC20 addressContract={AddressDonation} currentAccount={currentAccount} />
           </div>
         : <></>
       }
