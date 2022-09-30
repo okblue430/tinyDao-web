@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { ethers } from "ethers";
 import {DonationAbi} from 'abis/Donation'
+import { showBalance } from 'services/util';
 
 export function ClaimDaoToken ({
     addressContract,
-    currentAccount
+    currentAccount,
+    donater,
+    daoTokenAmount
 }) {
     const [loading, setLoading] = useState(false)
 
@@ -16,7 +19,7 @@ export function ClaimDaoToken ({
         const signer = provider.getSigner()
         const donation = new ethers.Contract(addressContract, DonationAbi, signer)
         try {
-            const res = await donation.depositEthToVault()
+            const res = await donation.claimDaoTokens()
             console.log({res})
         } catch (error) {
             console.log("deposite error", error)            
@@ -40,6 +43,16 @@ export function ClaimDaoToken ({
                             </div> 
                         : <div>Claim</div>}
                     </button>
+                </div>
+                <div className='my-6'>
+                    <div className="flex items-center justify-between">
+                        <p className='w-40 text-left text-black text-xs text-bold mb-3'>Donater : </p>
+                        <p className='text-black text-xs text-bold mb-3'>{donater}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <p className='w-40 text-left text-black text-xs text-bold mb-3'>Dao Token Amount : </p>
+                        <p className='text-black text-xs text-bold mb-3'>{showBalance(daoTokenAmount)}</p>
+                    </div>
                 </div>
             </form>
         </div>

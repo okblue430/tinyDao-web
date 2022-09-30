@@ -45,7 +45,7 @@ export function Donation({
     const [loading, setLoading] = useState(false)
     const [err, setErr] = useState('')
     const [message, setMessage] = useState('')
-    const [act, setAct] = useState(true)
+    // const [act, setAct] = useState(true)
     const [amountOut, setAmountOut] = useState(null)
     const [fee, setFee] = useState(null)
     const [ratio, setRatio] = useState(null)
@@ -140,6 +140,7 @@ export function Donation({
             if(routeToRatioResponse.status ==  SwapToRatioStatus.SUCCESS ) {
                 const route = routeToRatioResponse.result
                 const quoteAmountOut = route.quote.toFixed(18)
+                const gasFee = ethers.utils.formatEther(route.gasPriceWei)
                 const ratio = (quoteAmountOut / amount).toFixed(3)
                 setAmountOut(quoteAmountOut)
                 setRatio(ratio)
@@ -147,13 +148,14 @@ export function Donation({
                     // transaction,
                     quoteAmountOut,
                     ratio,
-                    immutables.fee
+                    immutables.fee,
+                    gasFee
                 ]
             }
         } catch (error) {
             console.log({error})
         }
-        return [null, null, null]
+        return [null, null, null, null]
     }
 
     const approve = async (event) => {
@@ -183,13 +185,13 @@ export function Donation({
             if(!window.ethereum) return    
             const provider = new ethers.providers.Web3Provider(window.ethereum)
             const signer = provider.getSigner()
-            const _TOKEN = new ethers.Contract(tokenAddress, ERC20abi, provider);
+            const _TOKEN = new ethers.Contract(tokenAddress, ERC20abi, provider)
             const ownToken = _TOKEN.connect(signer);
+            const _act = (Number(swap[3]) > Number(amount)) ? false : true
             // approve token
             try{
                 const tx = await ownToken.approve(TargetTokenAddress, ethers.utils.parseEther(amount))
                 console.log(tx)
-                await tx.wait();
             }catch(error) {
                 console.log("approve error", error)
                 setErr('There is an error to approve the amount')
@@ -198,8 +200,8 @@ export function Donation({
             // donate token
             const donation = new ethers.Contract(addressContract, DonationAbi, signer)
             try {
-                console.log("donation", {amount, address, act, fee: swap[2], amountOut: swap[0]})
-                const res = await donation.donate(ethers.utils.parseEther(amount), tokenAddress, act, swap[2], 0)
+                console.log("donation", {amount, address, act: _act, fee: swap[2], amountOut: swap[0]})
+                const res = await donation.donate(ethers.utils.parseEther(amount), tokenAddress, _act, swap[2], 0)
                 console.log({res})
                 setMessage('Donation successfully')
                 setAmount('')
@@ -258,17 +260,17 @@ export function Donation({
                 {tokenAddress &&
                     <div>
                         <div className="flex items-center justify-between">
-                            <div className='text-right'>
-                                <input className="mt-2 w-60 shadow appearance-none border rounded py-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            <div className='text-right flex-1'>
+                                <input className="mt-2 w-full shadow appearance-none border rounded py-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                     placeholder="amount"
                                     type="text"
                                     onChange={(e) => setAmount(e.target.value)}
                                 ></input>
                             </div>
-                            <div className="flex items-center">
+                            {/* <div className="flex items-center">
                                 <input id="act" onChange={(e) => setAct(e.target.checked)} type="checkbox" defaultChecked value={act} className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"></input>
                                 <label htmlFor="act" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Wait batch tx</label>
-                            </div>
+                            </div> */}
                         </div>
                         {ratio && <div className='mt-4'>
                             <ul className="pl-4 space-y-1 max-w-md list-disc list-inside text-gray-500 dark:text-gray-400 text-left">

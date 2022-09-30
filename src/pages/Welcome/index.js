@@ -11,6 +11,7 @@ import { DonationEth } from 'components/organisms/DonationEth';
 import { DepositToVault } from 'components/organisms/DepositToVault';
 import { DepositEthToVault } from 'components/organisms/DepositEthToVault';
 import { ClaimDaoToken } from 'components/organisms/ClaimDaoToken';
+import { DonationAbi } from 'abis/Donation';
 
 // let window;
 
@@ -25,6 +26,8 @@ export function Welcome() {
   const [decimal, setDecimal] = useState(null)
   const [chainId, setChainId] = useState(null)
   const [chainname, setChainName] = useState()
+  const [donater, setDonater] = useState(null)
+  const [daoTokenAmount, setDaoTokenAmount] = useState(null)
 
   const getName = async (erc20) => {
     try {
@@ -88,6 +91,7 @@ export function Welcome() {
     if(!window.ethereum) return
     
     const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const donation = new ethers.Contract(AddressDonation, DonationAbi, provider.getSigner())
     queryTokenBalance(provider)
     if(tokenAddress) {
       // const erc20 = new ethers.Contract(tokenAddress, ERC20abi, provider)
@@ -119,6 +123,26 @@ export function Welcome() {
       //     provider.removeAllListeners(fromMe)
       // } 
     }
+    donation.on("addressWhiteListed", (accounts) => {
+      console.log("Event addressWhiteListed", {accounts})
+    })
+    donation.on("addressWhitelistedAdmin", (accounts) => {
+      console.log("Event addressWhitelistedAdmin", {accounts})
+    })
+    donation.on("Claimed", (donater, daoTokenAmount) => {
+      console.log("Event Claimed", {donater, daoTokenAmount})
+      setDonater(donater)
+      setDaoTokenAmount(daoTokenAmount)
+    })
+    donation.on("DonationMade", (donater, tokenDonated, amountDonated) => {
+      console.log("Event DonationMade", {donater, tokenDonated, amountDonated})
+    })
+    donation.on("VaultDepositMade", (underlyingToken, amount) => {
+      console.log("Event VaultDepositMade", {underlyingToken, amount})
+    })
+    donation.on("EthVaultDepositMade", (amount) => {
+      console.log("Event EthVaultDepositMade", {amount})
+    })
   },[currentAccount, tokenAddress])
 
   const onClickConnect = () => {
@@ -202,9 +226,9 @@ export function Welcome() {
             <DonationEth addressContract={AddressDonation} currentAccount={currentAccount} />
             <DepositToVault addressContract={AddressDonation} currentAccount={currentAccount} />
             <DepositEthToVault addressContract={AddressDonation} currentAccount={currentAccount} />
-            <ClaimDaoToken addressContract={AddressDonation} currentAccount={currentAccount} />
+            <ClaimDaoToken addressContract={AddressDonation} currentAccount={currentAccount} donater={donater} daoTokenAmount={daoTokenAmount} />
             <AddReferral addressContract={AddressDonation} currentAccount={currentAccount} />
-            <ReadERC20 addressContract={AddressDonation} currentAccount={currentAccount} />
+            {/* <ReadERC20 addressContract={AddressDonation} currentAccount={currentAccount} /> */}
           </div>
         : <></>
       }

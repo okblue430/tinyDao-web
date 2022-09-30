@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { ethers } from "ethers";
 import {DonationAbi} from 'abis/Donation'
+import { ERC20abi } from 'abis/ERC20';
+import { AddressERC20 } from 'config';
 
 export function ReadERC20({
     addressContract,
@@ -18,9 +20,11 @@ export function ReadERC20({
         const donation = new ethers.Contract(addressContract, DonationAbi, signer)
         setLoading(true)
         try {
-            const balance = await donation.getReferralBalance(currentAccount)
-            const readableBalance = ethers.utils.formatEther(balance)
-            setAmount(readableBalance)
+            const tokenInfo = await donation.tokenInfos(currentAccount)
+            console.log({tokenInfo})
+            // const readableBalance = ethers.utils.formatEther(balance)
+            // console.log({readableBalance})
+            // setAmount(readableBalance)
         } catch (error) {
             console.log("balance error", error)            
         }
