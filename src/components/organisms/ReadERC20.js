@@ -21,10 +21,11 @@ export function ReadERC20({
         const donation = new ethers.Contract(addressContract, DonationAbi, signer)
         setLoading(true)
         try {
-            // const daoTokenAddress = await donation.daoToken() // 0xc00e94Cb662C3520282E6f5717214004A7f26888
-            // console.log(daoTokenAddress)
+            const daoTokenAddress = await donation.daoToken() // 0xc00e94Cb662C3520282E6f5717214004A7f26888
+            console.log(daoTokenAddress)
             const erc20 = new ethers.Contract(AddressERC20, ERC20abi, provider)
-            const balance = await erc20.balanceOf('0xc00e94Cb662C3520282E6f5717214004A7f26888')
+            const balance = await erc20.balanceOf(daoTokenAddress)
+            // const balance = await erc20.balanceOf('0xc00e94Cb662C3520282E6f5717214004A7f26888')
             console.log(showBalance(balance))
             setAmount(showBalance(balance))
         } catch (error) {
