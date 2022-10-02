@@ -3,7 +3,6 @@ import { ethers } from "ethers";
 import {DonationAbi} from 'abis/Donation'
 import { showBalance } from 'services/util';
 import { ERC20abi } from 'abis/ERC20';
-import { AddressERC20 } from 'config';
 
 export function ClaimDaoToken ({
     addressContract,
@@ -23,15 +22,15 @@ export function ClaimDaoToken ({
         const signer = provider.getSigner()
         const donation = new ethers.Contract(addressContract, DonationAbi, signer)
         try {
-            const res = await donation.claimDaoTokens()
-            const daoTokenAddress = await donation.daoToken() // 0xc00e94Cb662C3520282E6f5717214004A7f26888
-            console.log(daoTokenAddress)
-            const erc20 = new ethers.Contract(AddressERC20, ERC20abi, provider)
-            const balance = await erc20.balanceOf(daoTokenAddress)
+            // const res = await donation.claimDaoTokens()
+            const daoTokenAddress = await donation.daoToken() // 0xBEe6FFc1E8627F51CcDF0b4399a1e1abc5165f15
+            console.log({daoTokenAddress})
+            const erc20 = new ethers.Contract(daoTokenAddress, ERC20abi, provider)
+            const balance = await erc20.balanceOf(currentAccount)
             // const balance = await erc20.balanceOf('0xc00e94Cb662C3520282E6f5717214004A7f26888')
             console.log(showBalance(balance))
             setAmount(showBalance(balance))
-            console.log({res})
+            // console.log({res})
         } catch (error) {
             console.log("deposite error", error)            
             alert('There was some problem, please try again')
