@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ethers } from "ethers";
 import {DonationAbi} from 'abis/Donation'
+import { showBalance } from 'services/util';
 
 export function AddReferral ({
     addressContract,
@@ -8,6 +9,7 @@ export function AddReferral ({
 }) {
     const [items, setItems] = useState([{tagName: 'test', value: ''}])
     const [loading, setLoading] = useState(false)
+    const [referralBalance, setReferralBalance] = useState(null)
 
     const send = async (event) => {
         event.preventDefault()
@@ -50,6 +52,24 @@ export function AddReferral ({
     const removeItem = (idx) => {
         console.log("here-remove", idx)
         setItems(items.filter((t, i) => i !== idx))
+    }
+    const getBalance = async () => {
+        setReferralBalance(null)
+        setLoading(true)
+        if(!window.ethereum) return    
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const signer = provider.getSigner()
+        const donation = new ethers.Contract(addressContract, DonationAbi, signer)
+        try {
+            const balance = await donation.getReferralBalance(currentAccount) 
+            console.log(showBalance(balance))
+            setReferralBalance(showBalance(balance))
+            // console.log({res})
+        } catch (error) {
+            console.log("deposite error", error)            
+            alert('There was some problem, please try again')
+        }
+        setLoading(false)
     }
 
     return (
@@ -100,6 +120,18 @@ export function AddReferral ({
                             </div> 
                         : <div>Add</div>}
                     </button>
+                </div>
+                <div className='my-6'>
+                    <div className="flex items-center justify-between">
+                        <button
+                            className="w-60 ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            type="button"
+                            onClick={getBalance}
+                        >
+                            Get Referral Balance
+                        </button>
+                        <p className='text-black text-xs text-bold'>{referralBalance}</p>
+                    </div>
                 </div>
             </form>
         </div>

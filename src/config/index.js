@@ -1,5 +1,5 @@
-const AddressERC20 = '0xBEe6FFc1E8627F51CcDF0b4399a1e1abc5165f15'
-const AddressDonation = '0xC32609C91d6B6b51D48f2611308FEf121B02041f'
+const AddressERC20 = '0x10e38eE9dd4C549b61400Fc19347D00eD3edAfC4'
+const AddressDonation = '0xd753c12650c280383Ce873Cc3a898F6f53973d16'
 
 export {
     AddressERC20,

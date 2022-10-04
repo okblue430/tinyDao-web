@@ -12,6 +12,7 @@ export function ClaimDaoToken ({
 }) {
     const [loading, setLoading] = useState(false)
     const [amount, setAmount] = useState(null)
+    const [showBalanceBtn, setShowBalanceBtn] = useState(false)
 
     const send = async (event) => {
         event.preventDefault()
@@ -22,7 +23,24 @@ export function ClaimDaoToken ({
         const signer = provider.getSigner()
         const donation = new ethers.Contract(addressContract, DonationAbi, signer)
         try {
-            // const res = await donation.claimDaoTokens()
+            const res = await donation.claimDaoTokens()
+            await res.wait();
+            // console.log({res})
+        } catch (error) {
+            console.log("deposite error", error)            
+            alert('There was some problem, please try again')
+        }
+        setLoading(false)
+    }
+    const getToken = async () => {
+        setAmount(null)
+        setLoading(true)
+        if(!window.ethereum) return    
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const signer = provider.getSigner()
+        const donation = new ethers.Contract(addressContract, DonationAbi, signer)
+        try {
+            // check transaction and get balance
             const daoTokenAddress = await donation.daoToken() // 0xBEe6FFc1E8627F51CcDF0b4399a1e1abc5165f15
             console.log({daoTokenAddress})
             const erc20 = new ethers.Contract(daoTokenAddress, ERC20abi, provider)
@@ -54,13 +72,18 @@ export function ClaimDaoToken ({
                         : <div>Claim</div>}
                     </button>
                 </div>
-                {amount && 
                 <div className='my-6'>
                     <div className="flex items-center justify-between">
-                        <p className='w-40 text-left text-black text-xs text-bold mb-3'>Dao Token Amount : </p>
-                        <p className='text-black text-xs text-bold mb-3'>{amount}</p>
+                        <button
+                            className="w-50 ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            type="button"
+                            onClick={getToken}
+                        >
+                            Dao Token Amount
+                        </button>
+                        <p className='text-black text-xs text-bold'>{amount}</p>
                     </div>
-                </div>}
+                </div>
             </form>
         </div>
     );
