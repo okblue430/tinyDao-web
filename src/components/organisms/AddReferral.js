@@ -62,8 +62,8 @@ export function AddReferral ({
         const donation = new ethers.Contract(addressContract, DonationAbi, signer)
         try {
             const balance = await donation.getReferralBalance(currentAccount) 
-            console.log(showBalance(balance))
-            setReferralBalance(showBalance(balance))
+            console.log(balance)
+            setReferralBalance(balance)
             // console.log({res})
         } catch (error) {
             console.log("deposite error", error)            
